@@ -1,0 +1,40 @@
+# Tests, as CI runs them: pytest with coverage against your working tree.
+#
+#   docker compose -f docker-compose.test.yaml run --rm test
+#   docker compose -f docker-compose.test.yaml run --rm test pytest -k healthz
+#
+# The working tree is mounted, so code changes need no rebuild; dependency
+# changes are synced from uv.lock on each run.
+
+services:
+  test:
+    build:
+      context: .
+      target: dev
+    entrypoint: ["uv", "run", "--locked"]
+    command: ["pytest"]
+    volumes:
+      - .:/app
+      - uv-cache:/root/.cache/uv
+    environment:
+      DATABASE_URL: postgresql://proxy:proxy@db:5432/proxy  # not-a-secret
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18-trixie
+    environment:
+      POSTGRES_USER: proxy
+      POSTGRES_PASSWORD: proxy  # not-a-secret: local tests only
+      POSTGRES_DB: proxy
+    tmpfs:
+      - /var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U proxy -d proxy"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  uv-cache:

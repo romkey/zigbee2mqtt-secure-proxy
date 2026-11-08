@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% macro ids(values) %}{% for id in values %}<input type="hidden" name="action_id" value="{{ id }}">{% endfor %}{% endmacro %}
+{% macro buttons(values) %}
+<form method="post" action="/_proxy/review" class="inline">
+  <input type="hidden" name="csrf" value="{{ csrf }}">{{ ids(values) }}
+  <button name="verdict" value="approve">{{ caller() }} approve</button>
+  <button name="verdict" value="reject" class="danger">{{ caller() }} reject</button>
+</form>
+{% endmacro %}
+{% block content %}
+<h1>Actions held for review</h1>
+{% if not batches %}<p class="muted">Nothing is waiting for review.</p>{% else %}
+{% call buttons(all_ids) %}All {{ all_ids|length }}:{% endcall %}
+{% for batch in batches %}
+<details open>
+  <summary><strong>{{ batch.key_name }}</strong>: {{ batch.actions|length }} action{{ "s" if batch.actions|length != 1 }}, from {{ batch.actions[0].requested_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}</summary>
+  {% call buttons(batch.actions|map(attribute="id")|list) %}Batch:{% endcall %}
+  <div class="scroll"><table>
+  <tr><th>Time</th><th>Topic</th><th>Payload</th><th></th></tr>
+  {% for action in batch.actions %}
+  <tr>
+    <td>{{ action.requested_at.strftime("%H:%M:%S") }}</td>
+    <td><code>{{ action.topic }}</code></td>
+    <td><code>{{ action.payload|tojson }}</code></td>
+    <td>{% call buttons([action.id]) %}{% endcall %}</td>
+  </tr>
+  {% endfor %}
+  </table></div>
+</details>
+{% endfor %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Action log</h1>
+<form method="get" class="filters">
+  <select name="key" aria-label="Key"><option value="">All keys</option>{% for key in keys %}<option value="{{ key.id }}" {{ "selected" if filters.key == key.id|string }}>{{ key.name }}</option>{% endfor %}</select>
+  <select name="status" aria-label="Status"><option value="">Any status</option>{% for status in statuses %}<option {{ "selected" if filters.status == status.value }}>{{ status.value }}</option>{% endfor %}</select>
+  <input name="device" placeholder="Device" value="{{ filters.device or '' }}" aria-label="Device">
+  <input name="from" type="datetime-local" value="{{ filters.from or '' }}" aria-label="From (UTC)">
+  <input name="to" type="datetime-local" value="{{ filters.to or '' }}" aria-label="To (UTC)">
+  <button>Filter</button>
+</form>
+{% for entry in batches %}
+<details>
+  <summary>
+    <strong>{{ entry.key_name }}</strong>
+    {{ entry.batch.summary.verbs|join(", ") }}:
+    {{ entry.batch.action_count }} action{{ "s" if entry.batch.action_count != 1 }}{% if entry.batch.summary.devices %} on {{ entry.batch.summary.devices|join(", ") }}{% endif %}
+    <span class="muted">{{ entry.batch.started_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}</span>
+  </summary>
+  <div class="scroll"><table>
+  <tr><th>Time</th><th>Via</th><th>Topic</th><th>Payload</th><th>Status</th><th>Error</th></tr>
+  {% for action in entry.actions %}
+  <tr>
+    <td>{{ action.requested_at.strftime("%H:%M:%S") }}</td>
+    <td>{{ action.transport }}</td>
+    <td><code>{{ action.topic }}</code></td>
+    <td><code>{{ action.payload|tojson }}</code></td>
+    <td>{{ action.status }}</td>
+    <td>{{ action.error or "" }}</td>
+  </tr>
+  {% endfor %}
+  </table></div>
+</details>
+{% else %}<p class="muted">No actions match.</p>{% endfor %}
+<p>
+  {% if page > 1 %}<a href="?{{ query_string }}&amp;page={{ page - 1 }}">Newer</a>{% endif %}
+  {% if has_next %}<a href="?{{ query_string }}&amp;page={{ page + 1 }}">Older</a>{% endif %}
+</p>
+{% endblock %}

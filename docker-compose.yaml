@@ -1,0 +1,55 @@
+# Development: runs the app from your working tree, with the dev
+# dependencies installed.
+#
+#   cp .env.example .env              # then edit it
+#   docker compose run --rm app uv run --locked zigbee2mqtt-secure-proxy migrate
+#   docker compose up --build         # http://localhost:8080/healthz
+#   docker compose run --rm app bash  # a shell with everything installed
+#
+# Restart the app (docker compose restart app) to pick up code changes.
+# Tests, lint and production have their own compose files:
+#
+#   docker compose -f docker-compose.test.yaml run --rm test
+#   docker compose -f docker-compose.lint.yaml run --rm lint
+#   docker compose -f docker-compose.prod.yaml up -d
+
+services:
+  app:
+    build:
+      context: .
+      target: dev
+    # uv run re-syncs /venv if pyproject.toml or uv.lock changed.
+    command: uv run --locked python -m zigbee2mqtt_secure_proxy
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - uv-cache:/root/.cache/uv
+    environment:
+      DATABASE_URL: postgresql://proxy:proxy@db:5432/proxy  # not-a-secret
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18-trixie
+    environment:
+      POSTGRES_USER: proxy
+      POSTGRES_PASSWORD: proxy  # not-a-secret: local dev only
+      POSTGRES_DB: proxy
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U proxy -d proxy"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  uv-cache:
+  db-data:
