@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>API keys</h1>
+<form method="post" action="/_proxy/keys" class="inline">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <input name="name" placeholder="Name" required aria-label="Name">
+  <select name="tier" aria-label="Access">{% for tier in tiers %}<option>{{ tier.value }}</option>{% endfor %}</select>
+  <label><input type="checkbox" name="for_review"> For review</label>
+  <button>Create key</button>
+</form>
+<div class="scroll"><table>
+<tr><th>Name</th><th>Prefix</th><th>Last used</th><th>Access</th><th></th></tr>
+{% for key in keys %}
+<tr>
+  <td>{{ key.name }}</td>
+  <td><code>{{ key.prefix }}</code></td>
+  <td>{{ key.last_used_at.strftime("%Y-%m-%d %H:%M UTC") if key.last_used_at else "never" }}</td>
+  {% if key.revoked_at %}
+  <td colspan="2" class="muted">Revoked {{ key.revoked_at.strftime("%Y-%m-%d %H:%M UTC") }}</td>
+  {% else %}
+  <td>
+    <form method="post" action="/_proxy/keys/{{ key.id }}" class="inline">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <select name="tier" aria-label="Access">{% for tier in tiers %}<option {{ "selected" if tier.value == key.tier }}>{{ tier.value }}</option>{% endfor %}</select>
+      <label><input type="checkbox" name="for_review" {{ "checked" if key.for_review }}> For review</label>
+      <button>Save</button>
+    </form>
+  </td>
+  <td>
+    <form method="post" action="/_proxy/keys/{{ key.id }}/revoke" class="inline">
+      <input type="hidden" name="csrf" value="{{ csrf }}"><button class="danger">Revoke</button>
+    </form>
+  </td>
+  {% endif %}
+</tr>
+{% else %}<tr><td colspan="5" class="muted">No keys yet.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

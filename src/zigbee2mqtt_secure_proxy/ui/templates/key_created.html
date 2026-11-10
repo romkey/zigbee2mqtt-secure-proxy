@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Key created: {{ name }}</h1>
+<p>Copy this key now. It is stored only as a hash and is never shown again.</p>
+<p class="token"><code>{{ token }}</code></p>
+<p><a href="/_proxy/keys">Back to API keys</a></p>
+{% endblock %}

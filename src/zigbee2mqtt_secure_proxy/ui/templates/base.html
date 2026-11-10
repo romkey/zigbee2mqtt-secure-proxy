@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}zigbee2mqtt proxy{% endblock %}</title>
+<style>
+:root { color-scheme: light dark; --line: #8884; --accent: #2563eb; --danger: #b91c1c; }
+body { font: 15px/1.5 system-ui, sans-serif; margin: 0 auto; max-width: 1000px; padding: 16px; }
+nav { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 16px; }
+nav form { margin-left: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+.scroll { overflow-x: auto; }
+code, pre { font-size: 13px; overflow-wrap: anywhere; white-space: pre-wrap; }
+details { border: 1px solid var(--line); border-radius: 6px; margin: 8px 0; padding: 8px 12px; }
+summary { cursor: pointer; }
+form.inline { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 2px 0; }
+button { padding: 3px 10px; }
+button.danger { color: var(--danger); }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.token { padding: 12px; border: 1px solid var(--accent); border-radius: 6px; }
+.muted { opacity: .7; }
+</style>
+</head>
+<body>
+<nav>
+  <strong>zigbee2mqtt proxy</strong>
+  <a href="/_proxy/review">Review</a>
+  <a href="/_proxy/keys">API keys</a>
+  <a href="/_proxy/log">Action log</a>
+  <a href="/_proxy/events">Admin events</a>
+  {% if request.session.get("admin_id") %}
+  <form method="post" action="/_proxy/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><button>Log out</button></form>
+  {% endif %}
+</nav>
+{% block content %}{% endblock %}
+</body>
+</html>

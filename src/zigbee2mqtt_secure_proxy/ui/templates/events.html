@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Admin events</h1>
+<div class="scroll"><table>
+<tr><th>Time</th><th>Admin</th><th>Event</th><th>Detail</th></tr>
+{% for event, admin in events %}
+<tr>
+  <td>{{ event.at.strftime("%Y-%m-%d %H:%M:%S UTC") }}</td>
+  <td>{{ admin.display_name or admin.email or admin.oidc_subject }}</td>
+  <td>{{ event.kind }}</td>
+  <td><code>{{ event.detail|tojson }}</code></td>
+</tr>
+{% else %}<tr><td colspan="4" class="muted">Nothing yet.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

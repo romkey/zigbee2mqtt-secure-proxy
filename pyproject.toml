@@ -1,0 +1,87 @@
+[project]
+name = "zigbee2mqtt-secure-proxy"
+version = "0.0.0"
+description = "API-key gated, auditable proxy for zigbee2mqtt, with OpenID Connect admin login."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "John Romkey" }]
+# Keep in step with .python-version and the Dockerfile's python image.
+requires-python = ">=3.15"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.15",
+]
+dependencies = [
+  "aiomqtt>=2.5.1",
+  "alembic>=1.20.1",
+  "anyio>=4.16.0",
+  "authlib>=1.9.5",
+  "fastapi>=0.162.2",
+  "httpx>=0.28.1",
+  "itsdangerous>=2.2.0",
+  "jinja2>=3.1.6",
+  "psycopg[binary]>=3.3.8",
+  "sqlalchemy[asyncio]>=2.1.8",
+  "uvicorn>=0.54.0",
+  "websockets>=17.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/romkey/zigbee2mqtt-secure-proxy"
+Changelog = "https://github.com/romkey/zigbee2mqtt-secure-proxy/blob/main/CHANGELOG.md"
+Issues = "https://github.com/romkey/zigbee2mqtt-secure-proxy/issues"
+
+[project.scripts]
+zigbee2mqtt-secure-proxy = "zigbee2mqtt_secure_proxy.__main__:main"
+
+[dependency-groups]
+dev = [
+  "mypy>=2.4.0",
+  "pytest>=9.1.1",
+  "httpx2>=2.16.0",  # FastAPI TestClient
+  "pytest-cov>=7.1.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.ruff.lint]
+select = [
+  "E", "W", "F",  # pycodestyle, pyflakes
+  "I",            # import order
+  "N",            # naming
+  "UP",           # modern syntax for requires-python
+  "B",            # likely bugs
+  "S",            # security
+  "C4", "SIM", "RET", "PTH",
+  "DTZ",          # timezone-aware datetimes
+  "T20",          # no print(); use logging
+  "LOG", "G",     # logging calls
+  "PT",           # pytest style
+  "RUF",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]  # assert is how pytest works
+"scripts/**" = ["T20"]  # command-line tools print
+
+[tool.mypy]
+strict = true
+files = ["src", "tests", "scripts"]
+
+[tool.pytest.ini_options]
+addopts = ["--cov", "--cov-report=term-missing", "--strict-markers"]
+testpaths = ["tests"]
+xfail_strict = true
+anyio_mode = "auto"
+
+[tool.coverage.run]
+source = ["zigbee2mqtt_secure_proxy"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+skip_covered = true
+exclude_also = ['if __name__ == "__main__":']
